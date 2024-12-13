@@ -25,16 +25,17 @@ jobs:
 
       - name: Run Cypress tests
         run: |
-          mkdir -p cypress/reports
-          docker run --rm \
-            -v $PWD:/e2e \
-            -v $PWD/cypress/reports:/e2e/cypress/reports \
-            -w /e2e \
-            xyz-bank-e2e-tests
+            mkdir -p cypress/reports
+            docker run --rm \
+              -v $PWD:/e2e \
+              -v $PWD/cypress/reports:/e2e/cypress/reports \
+              -v $HOME/.cache:/root/.cache \
+              -w /e2e \
+              xyz-bank-e2e-tests
 
       - name: Archive Cypress test results
         uses: actions/upload-artifact@v3
         if: always()
         with:
           name: cypress-reports
-          path: cypress/reports
+          path: cypress/reports      
