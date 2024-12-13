@@ -1,0 +1,14 @@
+{
+    "customers": [
+      "Hermoine Granger",
+      "Harry Potter",
+      "Ron Weasly",
+      "Albus Dumbledore",
+      "Neville Longbottom"
+    ],
+    "newCustomers": [
+      "Draco Malfoy",
+      "Luna Lovegood"
+    ]
+}
+  
