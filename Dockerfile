@@ -1,14 +1,11 @@
-# Используем официальный Cypress образ как базовый
-FROM cypress/included:13.16.1
+FROM node:16
 
-# Устанавливаем рабочую директорию внутри контейнера
+RUN npm install -g cypress
+
 WORKDIR /e2e
 
-# Копируем весь проект в контейнер
-COPY . /e2e
+COPY . .
 
-# Устанавливаем все зависимости
 RUN npm install
 
-# Команда для запуска тестов
 CMD ["npm", "test"]
