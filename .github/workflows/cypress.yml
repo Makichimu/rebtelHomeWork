@@ -25,10 +25,13 @@ jobs:
 
       - name: Run Cypress tests
         run: |
+          # Создаем каталог для отчетов Cypress перед запуском контейнера
+          mkdir -p cypress/reports
+          # Запуск контейнера с монтированием
           docker run --rm \
             -v $PWD:/e2e \                
-            -v $PWD/cypress/reports:/e2e/cypress/reports \ 
-            -w /e2e \
+            -v $PWD/cypress/reports:/e2e/cypress/reports \  
+            -w /e2e \                      
             xyz-bank-e2e-tests
 
       - name: Archive Cypress test results
