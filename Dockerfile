@@ -1,4 +1,4 @@
-FROM node:16
+FROM node:20-alpine
 
 RUN npm install -g cypress
 
@@ -9,6 +9,8 @@ WORKDIR /e2e
 COPY . .
 
 RUN npm install
+
+RUN npx cypress install
 
 USER node
 

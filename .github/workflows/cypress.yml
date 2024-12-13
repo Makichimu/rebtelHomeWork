@@ -29,8 +29,10 @@ jobs:
             docker run --rm \
             -v $PWD:/e2e \
             -v $PWD/cypress/reports:/e2e/cypress/reports \
+            -v $HOME/.cache:/root/.cache \
             -w /e2e \
-            xyz-bank-e2e-tests
+            xyz-bank-e2e-tests \
+            bash -c "npx cypress install && npm test"
 
       - name: Archive Cypress test results
         uses: actions/upload-artifact@v3
