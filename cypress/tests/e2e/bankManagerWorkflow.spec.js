@@ -2,9 +2,11 @@ import ManagerPage from "../../pages/ManagerPage";
 
 describe('Bank Manager Workflow Tests', function () {
     let managerPage = new ManagerPage();
+    this.beforeEach(() => {
+        cy.loginAsManager();
+    });
 
     it('Add new customer', function () {
-        cy.loginAsManager();
         this.customers.newCustomers.forEach((customer) => {
             cy.log(`Testing customer: ${customer}`);
             managerPage.addCustomerButton.click();
@@ -19,7 +21,6 @@ describe('Bank Manager Workflow Tests', function () {
     });
 
     it('Open new account', function () {
-        cy.loginAsManager();
         this.customers.customers.forEach((customer) => {
             const [firstName, lastName] = customer.split(' ');
             cy.log(`Opening accounts for customer: ${firstName} ${lastName}`);

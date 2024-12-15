@@ -1,7 +1,7 @@
 import AccountPage from "../pages/AccountPage";
+import moment from "moment";
 
-
-export const selectAllAccountsAndPerformAction = (accountSelectLocator, action) => {
+export const selectAllAccountsAndPerformAction = (action) => {
     const accountPage = new AccountPage();
     accountPage.accountSelect
         .find('option')
@@ -66,4 +66,8 @@ export const withdrawFromAccount = (accountPage, accountNumber, withdrawAmount) 
             });
         });
     });
+};
+
+export const convertData = (date) => {
+    return moment(date).format('MMM D, YYYY h:mm:ss A');
 };

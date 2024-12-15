@@ -98,6 +98,7 @@ Some example functions:
 - `getUserId`: Retrieves the user ID from localStorage based on the user's first and last name.
 - `depositToAccount`: Deposits a specified amount into an account and returns the balance before and after the deposit.
 - `withdrawFromAccount`: Withdraws a specified amount from an account and returns the balance before and after the withdrawal.
+- `convertData`: Converts data from lockalStorage into TransactionTable format.
 You can use these functions in your tests like so:
 ```
 javascript

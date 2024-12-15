@@ -22,6 +22,12 @@ class AccountPage {
     get transactionsButton() {
         return cy.contains('Transactions'); 
     }
+    get transactionsTable() {
+        return cy.get('table');
+    }
+    get transactionsTableRows() {
+        return cy.get('table > tbody > tr');
+    }
     get depositButton() {
         return cy.contains('Deposit'); 
     }
@@ -43,7 +49,43 @@ class AccountPage {
     visit() {
         cy.visit('/account');
     }
+    clickTransactionTableButtonLeft() {
+        cy.get(`button[ng-click="scrollTop()"]`).click();
+    }
+    
+    clickTransactionTableButtonRight() {
+        cy.get(`button[ng-click="scrollRight()"]`).click();
+    }
+    
+    clickTransactionTableButtonReset() {
+        cy.get(`button[ng-click="reset()"]`)
+          .then($button => {
+            if ($button.is(':visible')) {
+              $button.click();
+            } else {
+              cy.log('Reset button is not visible, skipping click');
+            }
+          });
+    }
+    
+    
+    clickTransactionButtonBack() {
+        cy.get(`button[ng-click="back()"]`).click();
+    }
+    
+    sortTransactionTableByDate() {
+        this.transactionsTable.find('thead > tr > td').eq(1).click();
+    }
 
+    resetTransactionHistory() {
+        this.transactionsButton.click();
+        this.clickTransactionTableButtonReset();
+        this.clickTransactionButtonBack();
+    }
+    findTransaction(date, amount, type) {
+        const transaction = `${date} ${amount} ${type}`;
+        this.transactionsTableRows.contains(transaction).should('be.visible');
+    }
     logout() {
         this.logoutButton.click();
     }
