@@ -184,7 +184,7 @@ jobs:
         run: npm install
 
       - name: Run Cypress tests
-        run: npx cypress run --browser chrome --reporter mochawesome --reporter-options reportDir=cypress/reports,overwrite=false,html=true,json=true
+        run: npm run
 
       - name: Upload Cypress test results
         uses: actions/upload-artifact@v4
