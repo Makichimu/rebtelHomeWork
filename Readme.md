@@ -196,4 +196,4 @@ jobs:
 ### Accessing Test Results
 - Go to the Actions tab on GitHub.
 - Select the latest workflow run.
-- Download the cypress-reports artifact.
+- Download the cypress-reports artifact
