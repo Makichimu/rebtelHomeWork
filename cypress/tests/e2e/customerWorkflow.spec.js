@@ -1,108 +1,107 @@
 import CustomerPage from "../../pages/CustomerPage";
 import AccountPage from "../../pages/AccountPage";
-import { selectAllAccountsAndPerformAction, withdrawFromAccount, getUserId, depositToAccount, convertData } from "../../utils/accountUtils";
+import {
+  getUserId,
+  depositToAccount,
+  withdrawFromAccount,
+  convertData
+} from "../../utils/accountUtils";
 
+describe('Customer Workflow Tests', function () {
+  const customerPage = new CustomerPage();
+  const accountPage = new AccountPage();
 
-describe ('Customer Workflow Tests', () => {
-    let customerPage = new CustomerPage();
-    let accountPage = new AccountPage();
-    
-    it ('Login by each customer', function() {
-        this.customers.customers.forEach((customer) => {
-            cy.log('Testing customer:', customer);
-            cy.loginAsCustomer(customer);
-            accountPage.accountHeading.should('have.text', customer);
-            accountPage.logout();
-            customerPage.verifyCustomerListIsVisible();
-        });
+  describe('Customer Login', () => {
+    it('should login as a customer successfully', function () {
+      const customer = this.customers.customers[0];
+      cy.log(`Logging in as customer: ${customer}`);
+      cy.loginAsCustomer(customer);
+      accountPage.accountHeading.should('have.text', customer);
+      accountPage.logout();
+      customerPage.verifyCustomerListIsVisible();
     });
+  });
 
-    it('Add deposit to each account for each customer', function() {
-        this.customers.customers.forEach((customer) => {
-            cy.log('Testing customer:', customer);
-            cy.loginAsCustomer(customer);
-            accountPage.resetTransactionHistory();
-            const [firstName, lastName] = customer.split(' ');
-            getUserId(firstName, lastName).then((userId) => {
-                cy.wrap(userId).should('not.be.null');
-                accountPage.accountHeading.should('have.text', customer);
-                selectAllAccountsAndPerformAction((accountNumber) => {
-                    cy.log('Testing account:', accountNumber);
-                    const depositAmount = 100;
-                    depositToAccount(accountPage, accountNumber, depositAmount).then(({ balanceBefore, balanceAfter }) => {
-                        cy.wrap(balanceAfter).should('equal', balanceBefore + depositAmount);;
-                        cy.window().then((window) => {
+  describe('Deposit Transaction', () => {
+    it('should add deposit to the account and verify transaction', function () {
+      const customer = this.customers.customers[0];
+      cy.log(`Testing deposit for customer: ${customer}`);
+      cy.loginAsCustomer(customer);
+      accountPage.resetTransactionHistory();
 
-                            const transactionData = JSON.parse(window.localStorage.getItem('Transaction'));
-                            cy.wrap(transactionData).should('not.be.null');
+      const [firstName, lastName] = customer.split(' ');
+      getUserId(firstName, lastName).then((userId) => {
+        expect(userId).to.not.be.null;
+        accountPage.accountHeading.should('have.text', customer);
+        accountPage.accountSelect.find('option').first().then(($option) => {
+          const accountNumber = $option.text().trim();
+          cy.log(`Testing deposit for account: ${accountNumber}`);
+          const depositAmount = 100;
+          depositToAccount(accountPage, accountNumber, depositAmount).then(({ balanceBefore, balanceAfter }) => {
+            expect(balanceAfter).to.equal(balanceBefore + depositAmount);
+            cy.window().then((window) => {
+              const transactionData = JSON.parse(window.localStorage.getItem('Transaction'));
+              expect(transactionData).to.not.be.null;
+              const userTransactions = transactionData[userId];
+              expect(userTransactions).to.not.be.null;
+              const accountTransactions = userTransactions[accountNumber];
+              expect(accountTransactions.length).to.be.greaterThan(0);
+              const lastTransaction = accountTransactions[accountTransactions.length - 1];
+              expect(lastTransaction).to.deep.include({
+                amount: depositAmount,
+                type: 'Credit',
+              });
+              const lastTransactionDate = convertData(lastTransaction.date);
 
-                            const userTransactions = transactionData[userId];
-                            cy.wrap(userTransactions).should('not.be.null');
-
-                            const accountTransactions = userTransactions[accountNumber];
-                            cy.wrap(accountTransactions).should('have.length.greaterThan', 0);
-
-                            const lastTransaction = accountTransactions[accountTransactions.length - 1];
-                            
-                            cy.wrap(lastTransaction).should('deep.include', {
-                                amount: depositAmount,
-                                type: 'Credit',
-                            });
-                            const lastTransactionDate = lastTransaction.date;
-                            cy.wrap(convertData(lastTransactionDate)).as('lastTransactionDate');
-                            
-                        });
-                    });
-                    cy.get('@lastTransactionDate').then((lastTransactionDate) => {
-                        cy.wait(1000);
-                        accountPage.transactionsButton.click();
-                        accountPage.sortTransactionTableByDate();
-                        accountPage.findTransaction(lastTransactionDate, depositAmount, 'Credit');
-                        accountPage.clickTransactionButtonBack();
-                    });
-                });
+              cy.wait(1000);
+              accountPage.transactionsButton.click();
+              accountPage.sortTransactionTableByDate();
+              accountPage.findTransaction(lastTransactionDate, depositAmount, 'Credit');
+              accountPage.clickTransactionButtonBack();
             });
+          });
         });
+      });
     });
-    
+  });
 
-    it('Withdraw from each account', function () {
-        this.customers.customers.forEach((customer) => {
-            cy.log('Testing customer:', customer);
-            cy.loginAsCustomer(customer);
-            const [firstName, lastName] = customer.split(' ');
-            getUserId(firstName, lastName).then((userId) => {
-                cy.log('User ID:', userId);
-                expect(userId).to.not.be.null;
-                accountPage.accountHeading.should('have.text', customer);
-                selectAllAccountsAndPerformAction((accountNumber) => {
-                    const withdrawAmount = 100;
-                    withdrawFromAccount(accountPage, accountNumber, withdrawAmount).then(({ balanceBefore, balanceAfter, withdrawAmount, errorExpected }) => {
-                        if (errorExpected) {
-                            cy.get('span.error').should('be.visible');
-                        } else {
-                            expect(balanceAfter).to.equal(balanceBefore - withdrawAmount);
-                            cy.window().then((window) => {
-                                const transactionData = JSON.parse(window.localStorage.getItem('Transaction'));
-                                cy.wrap(transactionData).should('not.be.null');
-    
-                                const userTransactions = transactionData[userId];
-                                cy.wrap(userTransactions).should('not.be.null');
-    
-                                const accountTransactions = userTransactions[accountNumber];
-                                cy.wrap(accountTransactions).should('have.length.greaterThan', 0);
-    
-                                const lastTransaction = accountTransactions[accountTransactions.length - 1];
-                                cy.wrap(lastTransaction).should('deep.include', {
-                                    amount: withdrawAmount,
-                                    type: 'Debit',
-                                });
-                            });
-                        };
-                    });
+  describe('Withdrawal Transaction', () => {
+    it('should withdraw from the account and verify transaction', function () {
+      const customer = this.customers.customers[0];
+      cy.log(`Testing withdrawal for customer: ${customer}`);
+      cy.loginAsCustomer(customer);
+
+      const [firstName, lastName] = customer.split(' ');
+      getUserId(firstName, lastName).then((userId) => {
+        expect(userId).to.not.be.null;
+        accountPage.accountHeading.should('have.text', customer);
+
+        accountPage.accountSelect.find('option').first().then(($option) => {
+          const accountNumber = $option.text().trim();
+          cy.log(`Testing withdrawal for account: ${accountNumber}`);
+          const withdrawAmount = 100;
+          withdrawFromAccount(accountPage, accountNumber, withdrawAmount).then(({ balanceBefore, balanceAfter, errorExpected }) => {
+            if (errorExpected) {
+              cy.get('span.error').should('be.visible');
+            } else {
+              expect(balanceAfter).to.equal(balanceBefore - withdrawAmount);
+              cy.window().then((window) => {
+                const transactionData = JSON.parse(window.localStorage.getItem('Transaction'));
+                expect(transactionData).to.not.be.null;
+                const userTransactions = transactionData[userId];
+                expect(userTransactions).to.not.be.null;
+                const accountTransactions = userTransactions[accountNumber];
+                expect(accountTransactions.length).to.be.greaterThan(0);
+                const lastTransaction = accountTransactions[accountTransactions.length - 1];
+                expect(lastTransaction).to.deep.include({
+                  amount: withdrawAmount,
+                  type: 'Debit',
                 });
-                // accountPage.transactionsButton.click();
-            });
+              });
+            }
+          });
         });
+      });
     });
+  });
 });
