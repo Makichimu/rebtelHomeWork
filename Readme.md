@@ -62,19 +62,35 @@ The Cypress configuration is located in cypress.config.js. Key settings include:
 - `Reporter`: Cypress uses the Mochawesome reporter to generate HTML and JSON reports.
 - `Report Directory`: Test results are stored in the cypress/reports folder.
 
-### Example Cypress Test
+### Test Suite Overview
 The tests are organized in cypress/tests/e2e/ and use the Page Object Model to structure the tests.
 
-bankManagerWorkflow.spec.js tests two workflows for manager:
+#### Bank Manager Workflow Tests (bankManagerWorkflow.spec.js) 
+These tests are organized into separate describe blocks:
 
-- Add new customer: Adds a customer to the banking system, filling out the necessary details and verifying the customer in the system.
-- Open new account: Opens accounts for existing customers, verifying that accounts are created for each test customer with each currency.
+#### Add New Customer
 
-customerWorkflow.spec.js tests two workflows for customer:
+- Navigates to the Banking Project homepage and logs in as a Bank Manager.
+- Uses a fixture (from customers.json) to add a new customer (only the first new customer is used, so if it needs we can pick any of them).
+- Verifies that the customer appears in the customer list.
 
-- Login as a Customer: Verifies that an existing customer can log in from the main page and confirms that the correct customer is logged in.
-- Make Transactions: Simulates customer transactions, including deposits. Verifies that the transactions are correctly processed for all customers and accounts, and ensures the changes are accurately reflected in localStorage.
+#### Open New Account
 
+- Logs in as Bank Manager and selects an existing customer (using data from customers.json).
+- Iterates over currencies (from currencies.json) to open an account for the customer in each currency.
+- Validates that the account count for the customer increases as expected.
+
+
+#### Customer Workflow Tests (customerWorkflow.spec.js)
+These tests validate customer-specific scenarios:
+
+#### Login as Customer
+- Navigates to the homepage, logs in as a customer, and verifies the correct customer is selected.
+
+#### Transaction Validation 
+Separeted into Deposit and Withdrow describe blocks
+- Performs deposit and withdrawal transactions on the customer account.
+- Checks that the updated balance is displayed, and that transaction details (including amounts and types) are correctly recorded in localStorage and visible in the transaction table.
 
 ## Adding New Tests
 
@@ -94,11 +110,11 @@ The utils folder contains helper functions that can be used across your tests. F
 
 Some example functions:
 
-- `selectAllAccountsAndPerformAction`: Selects all accounts and performs a given action on each account.
 - `getUserId`: Retrieves the user ID from localStorage based on the user's first and last name.
 - `depositToAccount`: Deposits a specified amount into an account and returns the balance before and after the deposit.
 - `withdrawFromAccount`: Withdraws a specified amount from an account and returns the balance before and after the withdrawal.
 - `convertData`: Converts data from lockalStorage into TransactionTable format.
+
 You can use these functions in your tests like so:
 ```
 javascript
